@@ -25,6 +25,7 @@ def main() -> None:
     p.add_argument("--plot", default="compare.png", help="куда сохранить график ('' — не сохранять)")
     args = p.parse_args()
     quiet_optuna()
+    optuna.logging.set_verbosity(optuna.logging.ERROR)  # без предупреждений CMA-ES о fallback для kind
 
     curves: dict[str, list[float]] = {}
     print(f"objective={args.objective}, n_trials={args.n_trials}, seeds={args.seeds}\n")

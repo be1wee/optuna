@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import statistics
+import importlib.util
 import time
 
 import optuna
@@ -30,6 +31,9 @@ def main() -> None:
     print(f"objective={args.objective}, n_trials={args.n_trials}, seeds={args.seeds}\n")
     print(f"{'sampler':<16}{'best (mean)':>14}{'best (min)':>14}{'time, s':>10}")
     for name in args.samplers:
+        if name == "gp" and importlib.util.find_spec("torch") is None:
+            print(f"{name:<16}  пропущен: GPSampler требует torch (см. README)")
+            continue
         bests, runs = [], []
         t0 = time.perf_counter()
         for s in range(args.seeds):

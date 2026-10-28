@@ -1,0 +1,9 @@
+skinparam dpi 150
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam classAttributeIconSize 0
+skinparam packageStyle folder
+skinparam class {
+  BackgroundColor<<demo>> #E1F5E1
+  BorderColor<<demo>> #4CAF50
+}

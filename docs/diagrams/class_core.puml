@@ -1,0 +1,103 @@
+@startuml class_core
+!include common.iuml
+title Диаграмма классов (1): кто и как обращается к сэмплеру\n(упрощение: показаны только поля/методы, относящиеся к сэмплированию; приватные помечены «-»)
+
+class Study {
+  + sampler : BaseSampler
+  + pruner : BasePruner
+  - _storage : BaseStorage
+  - _study_id : int
+  - _thread_local : _ThreadLocalStudyAttribute
+  + optimize(func, n_trials, n_jobs, ...)
+  + ask(fixed_distributions) : Trial
+  + tell(trial, values, state) : FrozenTrial
+  + enqueue_trial(params)
+  - _get_trials(deepcopy, states, use_cache) : list<FrozenTrial>
+}
+class _ThreadLocalStudyAttribute <<threading.local>> {
+  + in_optimize_loop : bool
+  + cached_all_trials : list<FrozenTrial> | None
+}
+abstract class BaseTrial
+class Trial {
+  + study : Study
+  + storage : BaseStorage
+  + relative_search_space : dict<str, BaseDistribution> | None
+  - _trial_id : int
+  - _cached_frozen_trial : FrozenTrial
+  - _relative_params : dict | None
+  - _fixed_params : dict
+  + suggest_float(name, low, high, step, log) : float
+  + suggest_int(name, low, high, step, log) : int
+  + suggest_categorical(name, choices)
+  + relative_params : dict  <<property, lazy>>
+  - _suggest(name, distribution)
+  - _is_fixed_param(name, dist) : bool
+  - _is_relative_param(name, dist) : bool
+}
+class FrozenTrial {
+  + number : int
+  + state : TrialState
+  + params : dict
+  + distributions : dict
+  + values : list<float>
+  + system_attrs : dict
+}
+abstract class BaseSampler {
+  + {abstract} infer_relative_search_space(study, trial) : dict<str, BaseDistribution>
+  + {abstract} sample_relative(study, trial, search_space) : dict<str, Any>
+  + {abstract} sample_independent(study, trial, name, dist) : Any
+  + before_trial(study, trial)
+  + after_trial(study, trial, state, values)
+  + reseed_rng()
+}
+abstract class BaseDistribution {
+  + to_internal_repr(v) : float
+  + to_external_repr(v) : Any
+  + single() : bool
+  - _contains(v) : bool
+}
+class FloatDistribution
+class IntDistribution
+class CategoricalDistribution
+abstract class BaseStorage {
+  + create_new_trial(study_id) : int
+  + set_trial_param(trial_id, name, internal_value, dist)
+  + set_trial_system_attr(trial_id, key, value)
+  + set_trial_state_values(trial_id, state, values)
+  + get_all_trials(study_id, deepcopy, states) : list<FrozenTrial>
+}
+class InMemoryStorage
+class RDBStorage
+class JournalStorage
+
+Study *-- _ThreadLocalStudyAttribute
+Study o--> "1" BaseSampler : sampler\n(Strategy)
+Study o--> "1" BaseStorage : _storage
+Study ..> Trial : <<create>> в ask()
+BaseTrial <|-- Trial
+Trial --> Study : study
+Trial --> BaseStorage
+Trial --> FrozenTrial : _cached_frozen_trial
+Trial ..> BaseDistribution : создаёт в suggest_*
+BaseSampler ..> FrozenTrial
+BaseSampler ..> BaseDistribution
+BaseSampler ..> Study : читает историю\n_get_trials()
+BaseDistribution <|-- FloatDistribution
+BaseDistribution <|-- IntDistribution
+BaseDistribution <|-- CategoricalDistribution
+BaseStorage <|-- InMemoryStorage
+BaseStorage <|-- RDBStorage
+BaseStorage <|-- JournalStorage
+
+note right of BaseSampler
+  Единственная абстракция, от которой зависят
+  Study и Trial. Конкретный алгоритм
+  выбирается при create_study(sampler=...),
+  по умолчанию TPESampler().
+end note
+note bottom of Trial
+  _suggest: fixed → single → relative → independent;
+  результат → storage.set_trial_param()
+end note
+@enduml

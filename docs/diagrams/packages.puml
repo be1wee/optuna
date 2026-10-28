@@ -1,0 +1,76 @@
+@startuml packages
+!include common.iuml
+hide members
+hide circle
+skinparam package {
+  BackgroundColor<<focus>> #FFF2CC
+  BorderColor<<focus>> #D6B656
+}
+title Optuna v5.0.0 — пакеты, участвующие в подборе гиперпараметров\n(упрощение: не показаны visualization, importance, terminator, artifacts, cli, testing)
+
+package "optuna.study" as study {
+  class Study
+  class "_optimize / _tell" as opt
+}
+package "optuna.trial" as trial {
+  class Trial
+  class FrozenTrial
+  class TrialState
+}
+package "optuna.samplers" as samplers <<focus>> {
+  abstract class BaseSampler
+  class "RandomSampler, QMCSampler,\nGridSampler, BruteForceSampler,\nPartialFixedSampler" as simple
+  package "_tpe" as tpe {
+    class TPESampler
+    class _ParzenEstimator
+  }
+  package "_gp" as sgp {
+    class GPSampler
+  }
+  package "_cmaes" as cma {
+    class CmaEsSampler
+  }
+  package "nsgaii / _nsgaiii / _ga" as ga {
+    class NSGAIISampler
+  }
+}
+package "optuna.search_space" as ss <<focus>> {
+  class IntersectionSearchSpace
+  class _GroupDecomposedSearchSpace
+}
+package "optuna.distributions" as dist {
+  abstract class BaseDistribution
+}
+package "optuna.storages" as storages {
+  abstract class BaseStorage
+  class "InMemoryStorage, RDBStorage,\nJournalStorage, GrpcStorageProxy" as stimpl
+}
+package "optuna.pruners" as pruners {
+  abstract class BasePruner
+}
+package "optuna._gp" as gpcore {
+  class "GPRegressor, acqf" as gpr
+}
+package "optuna._transform" as transform {
+  class _SearchSpaceTransform
+}
+
+study -down.> trial : создаёт Trial
+study -down.> samplers : хранит BaseSampler
+study -right.> storages : хранит BaseStorage
+study -left.> pruners
+trial -down.> samplers : suggest_* → sample_*
+trial -right.> storages : set_trial_param
+samplers -down.> ss : infer_relative_search_space
+samplers -down.> dist
+samplers -down.> transform
+samplers -right.> storages : set_trial_system_attr
+sgp -down.> gpcore
+ss -down.> dist
+storages -down.> dist
+note right of samplers
+  samplers → study/trial:
+  только аннотации типов (Study)
+  и FrozenTrial/TrialState
+end note
+@enduml

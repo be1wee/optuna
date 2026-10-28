@@ -1,0 +1,52 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "00 ask/tell step by step",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/00_ask_tell_step_by_step.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "01 trace TPE (quadratic)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/01_trace_sampling.py",
+      "args": ["--sampler", "tpe", "--n-trials", "12"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "01 trace TPE (dynamic search space)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/01_trace_sampling.py",
+      "args": ["--objective", "dynamic", "--n-trials", "14", "--no-caller"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "02 custom LocalSearchSampler",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/02_custom_sampler.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "03 compare samplers",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/03_compare_samplers.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

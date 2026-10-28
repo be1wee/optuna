@@ -1,0 +1,32 @@
+@startuml activity_suggest
+!include common.iuml
+title Деятельность: Trial._suggest(name, distribution)\noptuna/trial/_trial.py, строки 602–631
+
+start
+:trial = _get_latest_trial();
+if (name уже в trial.distributions?) then (да)
+  :check_distribution_compatibility();
+  :value = trial.params[name]\n(повторный suggest — сэмплер не вызывается);
+else (нет)
+  if (_is_fixed_param(): name в fixed_params?\n(enqueue_trial / study.ask(fixed_distributions))) then (да)
+    :value = _fixed_params[name];
+  elseif (distribution.single()?\n(low == high или 1 вариант)) then (да)
+    :value = _get_single_value(distribution);
+  elseif (_is_relative_param()?) then (да)
+    note right
+      при первом обращении:
+      sampler.infer_relative_search_space()
+      sampler.sample_relative()
+      (один раз на trial)
+    end note
+    :value = relative_params[name];
+  else (нет)
+    :value = sampler.sample_independent(\n   study, trial, name, distribution);
+  endif
+  :internal = distribution.to_internal_repr(value)\n(валидация, NaN → ValueError);
+  :storage.set_trial_param(trial_id, name, internal, distribution);
+  :обновить _cached_frozen_trial.params / distributions;
+endif
+:return value;
+stop
+@enduml

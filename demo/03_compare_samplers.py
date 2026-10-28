@@ -8,12 +8,11 @@
 
 from __future__ import annotations
 
-import statistics
 import importlib.util
+import statistics
 import time
 
 import optuna
-
 from common import OBJECTIVES, SAMPLER_NAMES, base_arg_parser, make_sampler, quiet_optuna
 
 

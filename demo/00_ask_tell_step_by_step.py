@@ -7,7 +7,6 @@ study.optimize() делает то же самое в цикле: optuna/study/_
 from __future__ import annotations
 
 import optuna
-
 from common import quiet_optuna
 from tracing_sampler import TracingSampler
 

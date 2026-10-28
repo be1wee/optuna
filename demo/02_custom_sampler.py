@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import optuna
-
 from common import OBJECTIVES, base_arg_parser, quiet_optuna
 from local_search_sampler import LocalSearchSampler
 from tracing_sampler import TracingSampler

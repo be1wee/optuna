@@ -13,7 +13,6 @@
 from __future__ import annotations
 
 import optuna
-
 from common import OBJECTIVES, base_arg_parser, make_sampler, quiet_optuna
 from tracing_sampler import TracingSampler
 

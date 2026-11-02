@@ -3,3 +3,7 @@ __pycache__/
 *.png
 !docs/**/*.png
 *.db
+.build/
+diagrams/
+cheatsheet.md
+compare.png

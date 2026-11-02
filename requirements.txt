@@ -1,6 +1,1 @@
 optuna==5.0.0
-scikit-learn>=1.3
-cmaes>=0.11        # для CmaEsSampler
-matplotlib>=3.7    # для графика в 03_compare_samplers.py
-# torch нужен только для GPSampler (--sampler gp). CPU-версия:
-#   pip install torch --index-url https://download.pytorch.org/whl/cpu

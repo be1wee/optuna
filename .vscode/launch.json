@@ -2,48 +2,47 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "00 ask/tell step by step",
+      "name": "steps: пошаговый цикл",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/demo/00_ask_tell_step_by_step.py",
+      "program": "${workspaceFolder}/demo/steps.py",
+      "args": [],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false
     },
     {
-      "name": "01 trace TPE (quadratic)",
+      "name": "run: Random",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/demo/01_trace_sampling.py",
-      "args": ["--sampler", "tpe", "--n-trials", "12"],
+      "program": "${workspaceFolder}/demo/run.py",
+      "args": [
+        "--sampler",
+        "random"
+      ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false
     },
     {
-      "name": "01 trace TPE (dynamic search space)",
+      "name": "run: TPE",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/demo/01_trace_sampling.py",
-      "args": ["--objective", "dynamic", "--n-trials", "14", "--no-caller"],
+      "program": "${workspaceFolder}/demo/run.py",
+      "args": [
+        "--sampler",
+        "tpe"
+      ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false
     },
     {
-      "name": "02 custom LocalSearchSampler",
+      "name": "custom: свой сэмплер",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/demo/02_custom_sampler.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": false
-    },
-    {
-      "name": "03 compare samplers",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/demo/03_compare_samplers.py",
+      "program": "${workspaceFolder}/demo/custom.py",
+      "args": [],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false

@@ -1,67 +1,52 @@
 @startuml sequence
 !include common.iuml
-skinparam sequenceMessageAlign left
-skinparam responseMessageBelowArrow true
 autonumber
-title Последовательность: один trial study.optimize(objective) c TPESampler (multivariate)\nсоответствует demo/01_trace_sampling.py; trial №N ≥ n_startup_trials
-
-actor "Код пользователя" as U
-participant "Study" as S
-participant "_optimize.py\n_run_trial" as R
-participant "Trial" as T
-participant "TPESampler" as TPE
-participant "IntersectionSearchSpace" as ISS
-participant "_ParzenEstimator" as PE
-participant "RandomSampler" as RS
-database "BaseStorage\n(InMemory)" as ST
-
-U -> S : optimize(objective, n_trials)
-S -> R : _optimize() → _optimize_sequential()
-R -> S : ask()
-S -> ST : create_new_trial(study_id)
-ST --> S : trial_id
-S -> T ** : Trial(study, trial_id)
-T -> ST : get_trial(trial_id)
-T -> TPE : before_trial(study, frozen)
-S --> R : trial
-R -> U : objective(trial)
-== define-by-run: первый suggest ==
-U -> T : suggest_float("x", -10, 10)
-T -> T : _suggest("x", FloatDistribution)
-note right of T : не fixed, не single()\n→ _is_relative_param()
-T -> T : relative_params (ленивое свойство)
-T -> TPE : infer_relative_search_space(study, frozen)
-TPE -> ISS : calculate(study, use_cache=True)
-ISS --> TPE : {x, y, kind}
-TPE --> T : search_space
-T -> TPE : sample_relative(study, frozen, search_space)
-TPE -> S : _get_trials(states=COMPLETE, PRUNED[, RUNNING])
-alt len(trials) < n_startup_trials
-  TPE --> T : {}  (все параметры пойдут в sample_independent)
-else достаточно истории
-  TPE -> TPE : _split_trials(): below (γ(n) лучших) / above
-  TPE -> PE ** : l(x) по below, g(x) по above
-  TPE -> PE : sample(rng, n_ei_candidates=24)
-  TPE -> TPE : argmax log l(x) − log g(x)
-  TPE -> ST : set_trial_system_attr("tpe:relative_params:0", json)
-  TPE --> T : {x: 1.9, y: -0.8, kind: "b"}
+title run.py: одна попытка optimize\nУпрощение: внутренние расчёты TPE и кэширование не показаны
+participant "Код скрипта" as Script
+participant Study
+participant "_run_trial / _tell" as Loop
+participant "objective\ncommon.py" as Objective
+participant Trial
+participant TracingSampler as Trace
+participant "RandomSampler или TPESampler" as Sampler
+database InMemoryStorage as Storage
+Script -> Study : optimize(objective, n_trials=15)
+Study -> Loop : запуск цикла
+Loop -> Study : ask()
+Study -> Storage : create_new_trial(...)
+Study -> Trial : создать Trial
+Trial -> Trace : before_trial(...)
+Trace -> Sampler : before_trial(...)
+Study --> Loop : trial
+Loop -> Objective : objective(trial)
+Objective -> Trial : suggest_float("x", -10, 10)
+Trial -> Trace : infer_relative_search_space(...)
+Trace -> Sampler : infer_relative_search_space(...)
+Sampler --> Trace : пространство поиска
+Trace --> Trial : пространство поиска
+Trial -> Trace : sample_relative(...)
+Trace -> Sampler : sample_relative(...)
+Sampler --> Trace : параметры или {}
+Trace --> Trial : параметры или {}
+alt x выбран совместно
+  Trial -> Trial : взять relative_params["x"]
+else x не выбран совместно
+  Trial -> Trace : sample_independent(..., "x", ...)
+  Trace -> Sampler : sample_independent(...)
+  Sampler --> Trace : x
+  Trace --> Trial : x
 end
-alt "x" ∈ relative_params
-  T -> T : value = relative_params["x"]
-else
-  T -> TPE : sample_independent(study, frozen, "x", dist)
-  TPE -> RS : sample_independent(...)  (пока n < n_startup)
-  RS --> TPE : value
-  TPE --> T : value
-end
-T -> ST : set_trial_param(trial_id, "x", to_internal_repr(value), dist)
-T --> U : 1.9
-== следующие suggest_* ==
-U -> T : suggest_float("y"), suggest_categorical("kind")
-note right of T : relative_params уже вычислены —\nсэмплер повторно НЕ вызывается
-U --> R : value
-R -> R : _tell_with_warning(study, trial, value)
-R -> TPE : after_trial(study, frozen, COMPLETE, [value])
-R -> ST : set_trial_state_values(trial_id, COMPLETE, [value])
-R --> S : следующая итерация цикла
+Trial -> Storage : set_trial_param(..., "x", ...)
+Trial --> Objective : x
+Objective -> Trial : suggest_float("y", -10, 10)
+note right of Trial
+Используется уже вычисленный relative_params
+или вызывается sample_independent для y.
+Значение y тоже записывается в Storage.
+end note
+Trial --> Objective : y
+Objective --> Loop : (x-2)^2 + (y+1)^2
+Loop -> Trace : after_trial(..., COMPLETE, [value])
+Trace -> Sampler : after_trial(...)
+Loop -> Storage : set_trial_state_values(...)
 @enduml

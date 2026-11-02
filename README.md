@@ -2,6 +2,9 @@
 
 **Автор:** Бейшеев Абай. **Язык:** Python.
 
+[Презентация](docs/output/presentation-final.pptx)
+Путь: `docs/output/presentation-final.pptx`
+
 **Библиотека:** [Optuna 5.0.0](https://github.com/optuna/optuna/tree/v5.0.0).
 Исследуем путь `Trial.suggest_float → BaseSampler → Storage` и замену алгоритма поиска.
 
